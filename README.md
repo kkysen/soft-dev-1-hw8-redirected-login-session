@@ -1,1 +1,1 @@
-# LoginSessionRedirect
+# RedirectedLoginSession
