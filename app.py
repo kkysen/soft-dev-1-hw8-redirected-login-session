@@ -61,7 +61,7 @@ def login():
         return render_template('login.jinja2')
 
 
-@app.route('/auth', methods=['post'])
+@app.route('/auth', methods=['get', 'post'])
 def authorize():
     # type: () -> Response
     """
@@ -75,6 +75,10 @@ def authorize():
     :return: the same login page with an error message or the welcome page
     """
     form = request.form  # type: ImmutableMultiDict
+    print(request.method)
+    if request.method.lower() != 'post' or 'username' not in form or 'password' not in form:
+        return reroute(login)
+
     username = form['username']
     password = form['password']
     if username not in users:
