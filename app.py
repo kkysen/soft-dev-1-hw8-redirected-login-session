@@ -13,7 +13,6 @@ import os
 __author__ = 'Khyber Sen and Jennifer Yu'
 __date__ = '2017-10-06'
 
-from util.flask_utils import reroute
 
 from flask import Flask
 from flask import Response
@@ -21,6 +20,9 @@ from flask import render_template
 from flask import request
 from flask import session
 from werkzeug.datastructures import ImmutableMultiDict
+
+from util.flask_utils import reroute
+from util.template_context import context as ctx
 
 app = Flask(__name__)
 
@@ -89,7 +91,7 @@ def welcome():
     if USERNAME_KEY not in session:
         return reroute(login)
     username = session[USERNAME_KEY]
-    return render_template('welcome.jinja2', username=username)
+    return render_template('welcome.jinja2', username=username, **ctx)
 
 
 @app.route('/logout')
