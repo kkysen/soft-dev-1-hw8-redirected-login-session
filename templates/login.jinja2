@@ -1,23 +1,23 @@
 {% extends "base.jinja2" %}
 
 {% block title %}
-Login
+    Login
 {% endblock title %}
 
 {% block body %}
-<h2>Login</h2>
-<!--suppress HtmlUnknownTarget -->
-<form action="/auth" method="post">
-    <label for="username">Username: </label>
-    <input type="text" name="username" id="username">
-    <br>
-    <label for="password">Password: </label>
-    <input type="password" name="password" id="password">
-    <br>
-    <input type="submit">
-</form>
+    <h2>Login</h2>
+    <!--suppress HtmlUnknownTarget -->
+    <form action="/auth" method="post">
+        <label for="username">Username: </label>
+        <input type="text" name="username" id="username">
+        <br>
+        <label for="password">Password: </label>
+        <input type="password" name="password" id="password">
+        <br>
+        <input type="submit">
+    </form>
 
-{% if failed %}
-    You entered the incorrect {{ failed }}.
-{% endif %}
+    {% if failed %}
+        You entered the incorrect {{ failed }}.
+    {% endif %}
 {% endblock body %}

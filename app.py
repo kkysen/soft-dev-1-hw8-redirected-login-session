@@ -13,6 +13,8 @@ import os
 __author__ = 'Khyber Sen and Jennifer Yu'
 __date__ = '2017-10-06'
 
+from util.flask_utils import reroute
+
 from flask import Flask
 from flask import Response
 from flask import render_template
@@ -20,24 +22,11 @@ from flask import request
 from flask import session
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils import reroute
-
 app = Flask(__name__)
 
 USERNAME_KEY = 'username'
 
 users = {'Hello': 'World'}
-
-
-def br(n):
-    # type: (int) -> str
-    """
-    Concisely create many <br> tags.
-
-    :param n: number of <br> to retur
-    :return: n <br> tags
-    """
-    return '<br>' * n
 
 
 @app.redirect_from('/')
@@ -100,7 +89,7 @@ def welcome():
     if USERNAME_KEY not in session:
         return reroute(login)
     username = session[USERNAME_KEY]
-    return render_template('welcome.jinja2', username=username, br=br)
+    return render_template('welcome.jinja2', username=username)
 
 
 @app.route('/logout')
