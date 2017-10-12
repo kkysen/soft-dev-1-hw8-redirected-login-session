@@ -7,17 +7,40 @@ from flask import redirect
 from flask import url_for
 
 from default_template_context import get_default_template_context
+from template_context import context
 
 
-def reroute(route):
+def reroute(route_func):
     # type: (callable) -> Response
     """
     Wrap redirect(url_for(...)) for route.func_name.
 
-    :param route: the route function to redirect to
+    :param route_func: the route function to redirect to
     :return: the Response from redirect(url_for(route.func_name))
     """
-    return redirect(url_for(route.func_name))
+    return redirect(url_for(route_func.func_name))
+
+
+_super_route = Flask.route
+
+
+def route(app, rule, **options):
+    def decorator(route_func):
+        route_func = _super_route(app, rule, **options)(route_func)
+
+        def url():
+            return url_for(route_func.func_name)
+
+        route_func.url = url
+        context[route_func.func_name] = route_func
+        return route_func
+
+    return decorator
+
+
+# override
+Flask.route = route
+del route
 
 
 def redirect_from(app, rule, **options):

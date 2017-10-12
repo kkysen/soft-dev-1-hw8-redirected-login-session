@@ -13,7 +13,6 @@ import os
 __author__ = 'Khyber Sen and Jennifer Yu'
 __date__ = '2017-10-06'
 
-
 from flask import Flask
 from flask import Response
 from flask import render_template
