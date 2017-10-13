@@ -20,7 +20,7 @@ from flask import request
 from flask import session
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils import reroute
+from util.flask_utils import reroute_to
 from util.template_context import context as ctx
 
 app = Flask(__name__)
@@ -30,7 +30,7 @@ USERNAME_KEY = 'username'
 users = {'Hello': 'World'}
 
 
-@app.redirect_from('/')
+@app.reroute_from('/')
 @app.route('/login')
 def login():
     # type: () -> Response
@@ -46,7 +46,7 @@ def login():
     """
     if USERNAME_KEY in session:
         print(session)
-        return reroute(welcome)
+        return reroute_to(welcome)
     else:
         return render_template('login.jinja2')
 
@@ -67,7 +67,7 @@ def authorize():
     form = request.form  # type: ImmutableMultiDict
     print(request.method)
     if request.method.lower() != 'post' or 'username' not in form or 'password' not in form:
-        return reroute(login)
+        return reroute_to(login)
 
     username = form['username']
     password = form['password']
@@ -76,7 +76,7 @@ def authorize():
     if password != users[username]:
         return render_template('login.jinja2', failed='password')
     session[USERNAME_KEY] = username
-    return reroute(welcome)
+    return reroute_to(welcome)
 
 
 @app.route('/welcome')
@@ -88,7 +88,7 @@ def welcome():
     :return: the welcome page or the redirected login page
     """
     if USERNAME_KEY not in session:
-        return reroute(login)
+        return reroute_to(login)
     username = session[USERNAME_KEY]
     return render_template('welcome.jinja2', username=username, **ctx)
 
@@ -102,8 +102,10 @@ def logout():
 
     :return: the original login page
     """
-    del session[USERNAME_KEY]
-    return reroute(login)
+    if USERNAME_KEY in session:
+        del session[USERNAME_KEY]
+
+    return reroute_to(login)
 
 
 if __name__ == '__main__':
