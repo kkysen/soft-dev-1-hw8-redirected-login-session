@@ -20,6 +20,8 @@ from flask import request
 from flask import session
 from werkzeug.datastructures import ImmutableMultiDict
 
+from pprint import pprint
+
 from util.flask_utils import reroute_to, preconditions, post_only
 from util.template_context import context as ctx
 
@@ -27,7 +29,7 @@ app = Flask(__name__)
 
 USERNAME_KEY = 'username'
 
-users = {'Hello': 'World'}
+users = {u'Hello': u'World'}
 
 
 @app.reroute_from('/')
@@ -45,20 +47,34 @@ def login():
     :return: the login page or the welcome page redirection
     """
     if USERNAME_KEY in session:
-        print(session)
         return reroute_to(welcome)
     else:
         return render_template('login.jinja2', **ctx)
 
 
+def valid_account_form():
+    # type: () -> bool
+    return 'username' in request.form and 'password' in request.form
+
+
+def get_account():
+    # type: () -> (str, str)
+    form = request.form  # type: ImmutableMultiDict
+    return form['username'], form['password']
+
+
 @app.route('/signup')
 def signup():
-    pass
+    return render_template('signup.jinja2', **ctx)
 
 
 @app.route('/add_user', methods=['get', 'post'])
+@preconditions(signup, post_only, valid_account_form)
 def add_user():
-    pass
+    username, password = get_account()
+    users[username] = password
+    pprint(users)
+    return reroute_to(login)
 
 
 def authenticate(username, password):
@@ -71,13 +87,8 @@ def authenticate(username, password):
     return None
 
 
-def auth_precondition():
-    # type: () -> bool
-    return 'username' in request.form and 'password' in request.form
-
-
 @app.route('/auth', methods=['get', 'post'])
-@preconditions(login, post_only, auth_precondition)
+@preconditions(login, post_only, valid_account_form)
 def auth():
     # type: () -> Response
     """
@@ -90,9 +101,7 @@ def auth():
 
     :return: the same login page with an error message or the welcome page
     """
-    form = request.form  # type: ImmutableMultiDict
-    username = form['username']
-    password = form['password']
+    username, password = get_account()
     error = authenticate(username, password)
     if error:
         return render_template('login.jinja2', error=error, **ctx)
@@ -101,6 +110,7 @@ def auth():
 
 
 @app.route('/welcome')
+@preconditions(login, lambda: USERNAME_KEY in session)
 def welcome():
     # type: () -> Response
     """
@@ -108,8 +118,6 @@ def welcome():
 
     :return: the welcome page or the redirected login page
     """
-    if USERNAME_KEY not in session:
-        return reroute_to(login)
     username = session[USERNAME_KEY]
     return render_template('welcome.jinja2', username=username, **ctx)
 

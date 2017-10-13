@@ -114,6 +114,7 @@ def preconditions(backup_route, *precondition_funcs):
                     return reroute_to(backup_route)
             return route()
 
+        rerouter.func_name = route.func_name
         return rerouter
 
     return decorator
