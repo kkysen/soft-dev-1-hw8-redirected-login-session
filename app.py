@@ -20,7 +20,7 @@ from flask import request
 from flask import session
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils import reroute_to
+from util.flask_utils import reroute_to, preconditions, post_only
 from util.template_context import context as ctx
 
 app = Flask(__name__)
@@ -48,11 +48,37 @@ def login():
         print(session)
         return reroute_to(welcome)
     else:
-        return render_template('login.jinja2')
+        return render_template('login.jinja2', **ctx)
+
+
+@app.route('/signup')
+def signup():
+    pass
+
+
+@app.route('/add_user', methods=['get', 'post'])
+def add_user():
+    pass
+
+
+def authenticate(username, password):
+    # type: (str, str) -> str | None
+    """Return None if authenicated or error msg if wrong."""
+    if username not in users:
+        return 'username'
+    if password != users[username]:
+        return 'password'
+    return None
+
+
+def auth_precondition():
+    # type: () -> bool
+    return 'username' in request.form and 'password' in request.form
 
 
 @app.route('/auth', methods=['get', 'post'])
-def authorize():
+@preconditions(login, post_only, auth_precondition)
+def auth():
     # type: () -> Response
     """
     Authorize the user's attempted login and redirect them to the welcome page if successful.
@@ -65,16 +91,11 @@ def authorize():
     :return: the same login page with an error message or the welcome page
     """
     form = request.form  # type: ImmutableMultiDict
-    print(request.method)
-    if request.method.lower() != 'post' or 'username' not in form or 'password' not in form:
-        return reroute_to(login)
-
     username = form['username']
     password = form['password']
-    if username not in users:
-        return render_template('login.jinja2', failed='username')
-    if password != users[username]:
-        return render_template('login.jinja2', failed='password')
+    error = authenticate(username, password)
+    if error:
+        return render_template('login.jinja2', error=error, **ctx)
     session[USERNAME_KEY] = username
     return reroute_to(welcome)
 
